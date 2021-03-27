@@ -1,0 +1,28 @@
+{
+  "name": "calcu.js",
+  "version": "0.11.1",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "debug": "nodemon src/demo.ts",
+    "start": "node build/src/demo.js",
+    "build": "tsc -p ./",
+    "build:types": "npx ts-node src/scripts/generate.ts",
+    "lint": "gts lint",
+    "clean": "gts clean",
+    "compile": "tsc",
+    "fix": "gts fix"
+  },
+  "dependencies": {
+    "@open-web3/orml-type-definitions": "^0.8.2-9",
+    "@polkadot/api": "^4.2.1"
+  },
+  "devDependencies": {
+    "@babel/runtime": "^7.13.2",
+    "@types/node": "^14.14.31",
+    "gts": "^3.1.0",
+    "nodemon": "^2.0.6",
+    "ts-node": "8.10.2",
+    "typescript": "^4.1.3"
+  }
+}
