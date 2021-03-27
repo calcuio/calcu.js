@@ -6,7 +6,7 @@ import {
 import staking from './staking';
 import claims from './claims';
 import market from './market';
-import swork from './tars';
+import tars from './tars';
 import base from './base';
 
 export const calcuTypes = {
@@ -14,7 +14,7 @@ export const calcuTypes = {
   staking,
   claims,
   market,
-  swork,
+  swork: tars,
 };
 
 export const types = {
