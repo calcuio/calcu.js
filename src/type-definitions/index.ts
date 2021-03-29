@@ -14,7 +14,7 @@ export const calcuTypes = {
   staking,
   claims,
   market,
-  swork: tars,
+  tars,
 };
 
 export const types = {
@@ -41,6 +41,6 @@ const bundle = {
 export const typesBundleForPolkadot = {
   spec: {
     // TODO: to rename it!
-    crust: bundle,
+    calcu: bundle,
   },
 };

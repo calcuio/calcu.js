@@ -3,10 +3,11 @@ import {typesBundleForPolkadot} from './type-definitions';
 
 async function main() {
     const api = new ApiPromise({
-      provider: new WsProvider('ws://44.237.84.153:9944'),
+      provider: new WsProvider('ws://localhost:9944'),
       typesBundle: typesBundleForPolkadot,
     });
 
+    console.info("running...")
     await api.isReady;
     console.log(api.genesisHash.toHex());
 

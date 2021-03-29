@@ -22,7 +22,7 @@
     "UsedInfo": {
         "used_size": "u64",
         "reported_group_count": "u32",
-        "groups": "BTreeMap<SworkerAnchor, bool>"
+        "groups": "BTreeMap<TarsAnchor, bool>"
     },
     "Status": {
         "_enum": [
@@ -33,7 +33,7 @@
     "Replica": {
         "who": "AccountId",
         "valid_at": "BlockNumber",
-        "anchor": "SworkerAnchor",
+        "anchor": "TarsAnchor",
         "is_reported": "bool"
     },
     "Releases": {
@@ -48,7 +48,7 @@
     },
     "IASSig": "Vec<u8>",
     "Identity": {
-        "anchor": "SworkerAnchor",
+        "anchor": "TarsAnchor",
         "punishment_deadline": "u64",
         "group": "Option<AccountId>"
     },
@@ -56,14 +56,14 @@
     "MerkleRoot": "Vec<u8>",
     "ReportSlot": "u64",
     "PKInfo": {
-        "code": "SworkerCode",
-        "anchor": "Option<SworkerAnchor>"
+        "code": "TarsCode",
+        "anchor": "Option<TarsAnchor>"
     },
-    "SworkerAnchor": "Vec<u8>",
-    "SworkerCert": "Vec<u8>",
-    "SworkerCode": "Vec<u8>",
-    "SworkerPubKey": "Vec<u8>",
-    "SworkerSignature": "Vec<u8>",
+    "TarsAnchor": "Vec<u8>",
+    "TarsCert": "Vec<u8>",
+    "TarsCode": "Vec<u8>",
+    "TarsPubKey": "Vec<u8>",
+    "TarsSignature": "Vec<u8>",
     "WorkReport": {
         "report_slot": "u64",
         "used": "u64",

@@ -13,7 +13,7 @@ export default {
     UsedInfo: {
       used_size: 'u64',
       reported_group_count: 'u32',
-      groups: 'BTreeMap<SworkerAnchor, bool>',
+      groups: 'BTreeMap<TarsAnchor, bool>',
     },
     Status: {
       _enum: ['Free', 'Reserved'],
@@ -21,7 +21,7 @@ export default {
     Replica: {
       who: 'AccountId',
       valid_at: 'BlockNumber',
-      anchor: 'SworkerAnchor',
+      anchor: 'TarsAnchor',
       is_reported: 'bool',
     },
     Releases: {
