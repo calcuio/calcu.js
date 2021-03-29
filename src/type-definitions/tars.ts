@@ -3,7 +3,7 @@ export default {
   types: {
     IASSig: 'Vec<u8>',
     Identity: {
-      anchor: 'SworkerAnchor',
+      anchor: 'TarsAnchor',
       punishment_deadline: 'u64',
       group: 'Option<AccountId>',
     },
@@ -11,14 +11,14 @@ export default {
     MerkleRoot: 'Vec<u8>',
     ReportSlot: 'u64',
     PKInfo: {
-      code: 'SworkerCode',
-      anchor: 'Option<SworkerAnchor>',
+      code: 'TarsCode',
+      anchor: 'Option<TarsAnchor>',
     },
-    SworkerAnchor: 'Vec<u8>',
-    SworkerCert: 'Vec<u8>',
-    SworkerCode: 'Vec<u8>',
-    SworkerPubKey: 'Vec<u8>',
-    SworkerSignature: 'Vec<u8>',
+    TarsAnchor: 'Vec<u8>',
+    TarsCert: 'Vec<u8>',
+    TarsCode: 'Vec<u8>',
+    TarsPubKey: 'Vec<u8>',
+    TarsSignature: 'Vec<u8>',
     WorkReport: {
       report_slot: 'u64',
       used: 'u64',
