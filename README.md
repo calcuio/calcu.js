@@ -1,2 +1,10 @@
 # calcu.js
-Calcu node.js SDK V0.1
+
+calcu js SDK
+
+## Getting Started
+
+```shell
+yarn
+yarn debug
+```
