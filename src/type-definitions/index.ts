@@ -40,7 +40,6 @@ const bundle = {
 // Type overrides have priority issues
 export const typesBundleForPolkadot = {
   spec: {
-    // TODO: to rename it!
     calcu: bundle,
   },
 };

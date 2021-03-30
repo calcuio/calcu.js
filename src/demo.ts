@@ -17,7 +17,8 @@ const logger = createLogger({
     }),
     format.colorize(),
     format.errors({stack: true}),
-    format.printf((info: { timestamp: any; level: any; message: any; }) => `[${info.timestamp}] ${info.level}: ${info.message}`)
+    //format.printf((info: { timestamp: any; level: any; message: any; }) => `[${info.timestamp}] ${info.level}: ${info.message}`)
+    format.printf(info=> `${info}`)
   ),
   transports: [
     new transports.Console(),
@@ -31,16 +32,16 @@ main().catch(e => {
 async function main() {
     /**********************Parameters from CMD*************************/
     // Get seeds of account from cmd
-    const seeds = argv[2];
+    const seeds =  "error drink laundry tortoise tell shed reward robust aim remove coral clip";
     if (!seeds) {
         logger.error("Please give the seeds of account");
         return
     }
 
     // WS address of Calcu chain
-    const chain_ws_url = argv[3];
+    const chain_ws_url = "ws://localhost:9944" ;
     if (!chain_ws_url) {
-        logger.error("Please give chain url, for example: ws://localhost:9955");
+        logger.error("Please give chain url, for example: ws://localhost:9944");
         return
     }
     else {
@@ -48,7 +49,7 @@ async function main() {
     }
 
     // The file will be stored on the Calcu
-    const filePath = argv[4];
+    const filePath = "./src/demo.ts";
     if (!chain_ws_url) {
         logger.error("Please give file path");
         return
