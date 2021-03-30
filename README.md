@@ -1,9 +1,6 @@
-![license](https://img.shields.io/badge/License-Apache%202.0-blue?logo=apache&style=flat-square)
-[![npm](https://img.shields.io/npm/v/@crustio/type-definitions?logo=npm&style=flat-square)](https://www.npmjs.com/package/@crustio/type-definitions)
+# calcu.js
 
-# crust.js
-
-This library helps user to access Calcu by using [polkadot.js](https://github.com/polkadot-js/api)
+The js SDK of Calcu Network
 
 ## Getting Started
 
