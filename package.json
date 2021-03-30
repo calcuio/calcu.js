@@ -15,7 +15,10 @@
   },
   "dependencies": {
     "@open-web3/orml-type-definitions": "^0.8.2-9",
-    "@polkadot/api": "^4.2.1"
+    "@polkadot/api": "^4.2.1",
+    "yarn": "^1.22.10",
+    "ipfs-core": "^0.5.2",
+    "winston": "^3.3.3"
   },
   "devDependencies": {
     "@babel/runtime": "^7.13.2",
