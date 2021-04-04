@@ -5,7 +5,7 @@ import {
 } from '@open-web3/orml-type-definitions/utils';
 import staking from './staking';
 import claims from './claims';
-import market from './market';
+import murphy from './murphy';
 import tars from './tars';
 import base from './base';
 
@@ -13,7 +13,7 @@ export const calcuTypes = {
   base,
   staking,
   claims,
-  market,
+  murphy,
   tars,
 };
 
