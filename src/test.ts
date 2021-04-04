@@ -1,13 +1,15 @@
 import { argv } from 'process';
 import fs from 'fs';
-import IPFS from 'ipfs-core';
+// import IPFS from 'ipfs-core';
 import { ApiPromise, WsProvider } from '@polkadot/api';
+import { Keyring } from '@polkadot/api';
 import {Calcu} from './';
-import {Keyring} from '@polkadot/keyring';
+// import {Keyring} from '@polkadot/keyring';
 import {KeyringPair} from '@polkadot/keyring/types';
 import {SubmittableExtrinsic} from '@polkadot/api/promise/types';
 
 import {createLogger, format, transports} from 'winston';
+import { allowedNodeEnvironmentFlags } from 'node:process';
 
 const logger = createLogger({
   level: 'info',
@@ -31,11 +33,11 @@ main().catch(e => {
 async function main() {
     /**********************Parameters from CMD*************************/
     // Get seeds of account from cmd
-    // const seeds =  "error drink laundry tortoise tell shed reward robust aim remove coral clip";
-    // if (!seeds) {
-    //     logger.error("Please give the seeds of account");
-    //     return
-    // }
+    const seeds =  "error drink laundry tortoise tell shed reward robust aim remove coral clip";
+    if (!seeds) {
+        logger.error("Please give the seeds of account");
+        return
+    }
 
     // WS address of Calcu chain
     const chain_ws_url = "ws://localhost:9944" ;
@@ -48,21 +50,21 @@ async function main() {
     }
 
     // The file will be stored on the Calcu
-    const filePath = "./src/demo.ts";
-    if (!chain_ws_url) {
-        logger.error("Please give file path");
-        return
-    }
-    else {
-        logger.info("File path is: " + filePath);
-    }
+    // const filePath = "./src/demo.ts";
+    // if (!chain_ws_url) {
+    //     logger.error("Please give file path");
+    //     return
+    // }
+    // else {
+    //     logger.info("File path is: " + filePath);
+    // }
     
     /***************************Base instance****************************/
     // Read file
-    const fileContent = await fs.readFileSync(filePath);
+    // const fileContent = await fs.readFileSync(filePath);
 
     // Start local ipfs, ipfs base folder will be $USER/.jsipfs
-    const ipfs = await IPFS.create();
+    // const ipfs = await IPFS.create();
 
     // Connect to chain
     let api = await Calcu({
@@ -72,14 +74,13 @@ async function main() {
     api = await api.isReady;
 
     // Load on-chain identity
+    // const krp = loadKeyringPair("Alice");
     // const krp = loadKeyringPair(seeds);
-    const keyring = new Keyring({ type: 'sr25519' });
-    const krp = keyring.addFromUri('//Alice', { name: 'Alice default' });
 
     /*****************************Main logic******************************/
     // Add file into ipfs
-    const fileInfo = await addFile(ipfs, fileContent)
-    logger.info("file info: " + JSON.stringify(fileInfo));
+    // const fileInfo = await addFile(ipfs, fileContent)
+    // logger.info("file info: " + JSON.stringify(fileInfo));
 
     // Waiting for chain synchronization
     while (await isSyncing(api)) {
@@ -90,9 +91,41 @@ async function main() {
         );
         await delay(6000);
     }
+    const keyring = new Keyring({ type: 'sr25519' });
+    // const krp = loadKeyringPair(seeds);
+    const krp = keyring.addFromUri(seeds);
+    const alice = keyring.addFromUri('//Alice', { name: 'Alice default' });
+    // logger.info(alice)
+    console.log(alice)
 
+    await api.query.system.account(alice.address, ({ nonce, data: balance }) => {
+      console.log(`free balance is ${balance.free} with ${balance.reserved} reserved and a nonce of ${nonce}`);
+    });
+    // await api.query.system.account(krp.address, ({ nonce, data: balance }) => {
+    //     console.log(`free balance is ${balance.free} with ${balance.reserved} reserved and a nonce of ${nonce}`);
+    //   });
+    
+    // const unsub = await api.tx.balances
+    //     .transfer(krp.address, 12345)
+    //     .signAndSend(alice, ({ events = [], status }) => {
+    //         console.log(`Current status is ${status.type}`);
+
+    //         if (status.isFinalized) {
+    //         console.log(`Transaction included at blockHash ${status.asFinalized}`);
+
+    //         // Loop through Vec<EventRecord> to display all events
+    //         events.forEach(({ phase, event: { data, method, section } }) => {
+    //             console.log(`\t' ${phase}: ${section}.${method}:: ${data}`);
+    //         });
+
+    //         unsub();
+    //         }
+    //     });
+    // console.log(alice.isLocked)
+    // alice.unlock("")
     // Send storage order transaction
-    const poRes = await placeOrder(api, krp, fileInfo.cid, fileInfo.size, 0)
+    const cid = "QmcztAX232UrQ3VUg7MZXsHSrkaRzT3uACZMJSRN7ymjYV";
+    const poRes = await placeOrder(api, alice, cid, 1, 0)
     if (!poRes) {
         logger.error("Place storage order failed");
         return
@@ -103,7 +136,7 @@ async function main() {
 
     // Check file status on chain
     while (true) {
-        const orderState = await getOrderState(api, fileInfo.cid);
+        const orderState = await getOrderState(api, cid);
         logger.info("Order status: " + JSON.stringify(orderState));
         await delay(10000);
     }
@@ -132,23 +165,23 @@ async function placeOrder(api: ApiPromise, krp: KeyringPair, fileCID: string, fi
  * @param ipfs ipfs instance
  * @param fileContent can be any of the following types: ` Uint8Array | Blob | String | Iterable<Uint8Array> | Iterable<number> | AsyncIterable<Uint8Array> | ReadableStream<Uint8Array>`
  */
-async function addFile(ipfs: IPFS.IPFS, fileContent: any) {
-    // Add file to ipfs
-    const cid = await ipfs.add(
-        fileContent,
-        {
-            progress: (prog) => console.log(`Add received: ${prog}`)
-        }
-    );
+// async function addFile(ipfs: IPFS.IPFS, fileContent: any) {
+//     // Add file to ipfs
+//     const cid = await ipfs.add(
+//         fileContent,
+//         {
+//             progress: (prog) => console.log(`Add received: ${prog}`)
+//         }
+//     );
 
-    // Get file status from ipfs
-    const fileStat = await ipfs.files.stat("/ipfs/" + cid.path);
+//     // Get file status from ipfs
+//     const fileStat = await ipfs.files.stat("/ipfs/" + cid.path);
 
-    return {
-        cid: cid.path,
-        size: fileStat.cumulativeSize
-    };
-}
+//     return {
+//         cid: cid.path,
+//         size: fileStat.cumulativeSize
+//     };
+// }
 
 /**
  * Get on-chain order information about files
@@ -196,6 +229,9 @@ async function sendTx(krp: KeyringPair, tx: SubmittableExtrinsic) {
       logger.info(
         `  ↪ 💸 [tx]: Transaction status: ${status.type}, nonce: ${tx.nonce}`
       );
+      // logger.info(
+      //   `  ↪ 💸 [tx]: Transaction status: is in block: ${status.isInBlock}, nonce: ${tx.nonce}`
+      // );
 
       if (
         status.isInvalid ||
@@ -209,6 +245,7 @@ async function sendTx(krp: KeyringPair, tx: SubmittableExtrinsic) {
       }
 
       if (status.isInBlock) {
+        console.log(events)
         events.forEach(({event: {method, section}}) => {
           if (section === 'system' && method === 'ExtrinsicFailed') {
             // Error with no detail, just return error
@@ -222,12 +259,14 @@ async function sendTx(krp: KeyringPair, tx: SubmittableExtrinsic) {
           }
         });
         events.forEach(({event:{ data, method, section } }) => {
-            console.log(`\t' ${section}.${method}:: ${data}`);
-  
-          });
+        //   console.log(event)
+          console.log(`\t' ${section}.${method}:: ${data}`);
+
+        });
       } else {
         // Pass it
       }
+
     }).catch(e => {
       reject(e);
     });

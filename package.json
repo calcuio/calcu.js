@@ -6,6 +6,7 @@
   "scripts": {
     "debug": "nodemon src/demo.ts",
     "start": "node build/src/demo.js",
+    "test": "nodemon src/test.ts",
     "build": "tsc -p ./",
     "build:types": "npx ts-node src/scripts/generate.ts",
     "lint": "gts lint",
