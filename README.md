@@ -25,7 +25,7 @@ main();
 
 ```ts
 // get file info
-const fileInfo = await calcu.query.market.files('QmYpVrhb796h4r47z6tDwbbg3yyU28y9SJKcxitWC5s5Ko');
+const fileInfo = await calcu.query.murphy.files('QmYpVrhb796h4r47z6tDwbbg3yyU28y9SJKcxitWC5s5Ko');
 console.log(fileInfo.toHuman());
 ```
 
