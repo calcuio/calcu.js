@@ -117,8 +117,7 @@ async function main() {
     // make transaction
     const pso = api.tx.murphy.upload(cid, file_size, tip);
     // send transaction
-    const txRes = JSON.parse(JSON.stringify((await send_tx(krp, pso))));
-    return JSON.parse(JSON.stringify(txRes));
+    return await send_tx(krp, pso);
 }
 
 /**
@@ -199,7 +198,7 @@ async function main() {
         // Pass it
       }
 
-      if (status.isInBlock) {
+      if (status.isInBlock || status.isFinalized) {
         events.forEach(({event: {method, section}}) => {
           if (section === 'system' && method === 'ExtrinsicFailed') {
             // Error with no detail, just return error
