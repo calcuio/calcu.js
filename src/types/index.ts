@@ -37,8 +37,7 @@ const bundle = {
   alias: typesAlias,
 };
 
-// Type overrides have priority issues
-export const typesBundleForPolkadot = {
+export const typesBundle = {
   spec: {
     calcu: bundle,
   },
