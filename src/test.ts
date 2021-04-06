@@ -154,7 +154,7 @@ async function placeOrder(api: ApiPromise, krp: KeyringPair, fileCID: string, fi
     // Determine whether to connect to the chain
     await api.isReadyOrError;
     // Generate transaction
-    const pso = api.tx.murphy.placeStorageOrder(fileCID, fileSize, tip);
+    const pso = api.tx.murphy.upload(fileCID, fileSize, tip);
     // Send transaction
     const txRes = JSON.parse(JSON.stringify((await sendTx(krp, pso))));
     return JSON.parse(JSON.stringify(txRes));
