@@ -29,62 +29,56 @@ main().catch(e => {
 });
 
 async function main() {
-    /**********************Parameters from CMD*************************/
-    // Get seeds of account from cmd
-    // const seeds =  "error drink laundry tortoise tell shed reward robust aim remove coral clip";
-    // if (!seeds) {
-    //     logger.error("Please give the seeds of account");
-    //     return
-    // }
 
     // WS address of Calcu chain
-    const chain_ws_url = "ws://localhost:9944" ;
+
+    let chain_ws_url = argv[2];
     if (!chain_ws_url) {
-        logger.error("Please give chain url, for example: ws://localhost:9944");
-        return
+        chain_ws_url = "ws://localhost:9944" ;
+        logger.warn("chain url set as default : "+chain_ws_url);
     }
     else {
         logger.info("Chain url is: " + chain_ws_url);
     }
 
     // The file will be stored on the Calcu
-    const filePath = "./src/demo.ts";
-    if (!chain_ws_url) {
-        logger.error("Please give file path");
-        return
+    let file_path = argv[3];
+
+    
+    if (!file_path) {
+        file_path = "./src/demo.ts";
+        logger.warn("file path set as default: " + file_path);
+        
     }
     else {
-        logger.info("File path is: " + filePath);
+        logger.info("File path input as : " + file_path);
     }
     
-    /***************************Base instance****************************/
-    // Read file
-    const fileContent = await fs.readFileSync(filePath);
+    // read file
+    const file_content = await fs.readFileSync(file_path);
 
     // Start local ipfs, ipfs base folder will be $USER/.jsipfs
     const ipfs = await IPFS.create();
 
-    // Connect to chain
+    // connect to chain
     let api = await Calcu({
         provider: new WsProvider(chain_ws_url)
     });
 
     api = await api.isReady;
 
-    // Load on-chain identity
-    // const krp = loadKeyringPair(seeds);
     const keyring = new Keyring({ type: 'sr25519' });
     const krp = keyring.addFromUri('//Alice', { name: 'Alice default' });
 
-    /*****************************Main logic******************************/
-    // Add file into ipfs
-    const fileInfo = await addFile(ipfs, fileContent)
-    logger.info("file info: " + JSON.stringify(fileInfo));
+
+    // upload file into ipfs
+    const file_info = await upload_file(ipfs, file_content)
+    logger.info("file info: " + JSON.stringify(file_info));
 
     // Waiting for chain synchronization
-    while (await isSyncing(api)) {
+    while (await is_syncing(api)) {
         logger.info(
-            `⛓  Chain is synchronizing, current block number ${(
+            `chain is synchronizing, current block number ${(
                 await await api.rpc.chain.getHeader()
             ).number.toNumber()}`
         );
@@ -92,73 +86,73 @@ async function main() {
     }
 
     // Send storage order transaction
-    const poRes = await placeOrder(api, krp, fileInfo.cid, fileInfo.size, 0)
+    const poRes = await send_order(api, krp, file_info.cid, file_info.size, 0)
     if (!poRes) {
-        logger.error("Place storage order failed");
+        logger.error("send order failed");
         return
     }
     else {
-        logger.info("Place storage order success");
+        logger.info("send order success");
     }
 
-    // Check file status on chain
+    // get file status on chain
     while (true) {
-        const orderState = await getOrderState(api, fileInfo.cid);
-        logger.info("Order status: " + JSON.stringify(orderState));
-        await delay(10000);
-    }
+      const order_state = await get_order_info(api, file_info.cid);
+      logger.info("Order status: " + JSON.stringify(order_state));
+      await delay(10000);
+  }
 }
 
 /**
- * Place stroage order
+ * send stroage order
  * @param api chain instance
- * @param fileCID the cid of file
- * @param fileSize the size of file in ipfs
+ * @param cid file cid
+ * @param file_size the size of file in ipfs
  * @param tip tip for this order
  * @return true/false
  */
-async function placeOrder(api: ApiPromise, krp: KeyringPair, fileCID: string, fileSize: number, tip: number) {
-    // Determine whether to connect to the chain
+ async function send_order(api: ApiPromise, krp: KeyringPair, cid: string, file_size: number, tip: number) {
+
     await api.isReadyOrError;
-    // Generate transaction
-    const pso = api.tx.murphy.upload(fileCID, fileSize, tip);
-    // Send transaction
-    const txRes = JSON.parse(JSON.stringify((await sendTx(krp, pso))));
+    // make transaction
+    const pso = api.tx.murphy.upload(cid, file_size, tip);
+    // send transaction
+    const txRes = JSON.parse(JSON.stringify((await send_tx(krp, pso))));
     return JSON.parse(JSON.stringify(txRes));
 }
 
 /**
- * Add file into local ipfs node
+ * upload file into local ipfs node
  * @param ipfs ipfs instance
  * @param fileContent can be any of the following types: ` Uint8Array | Blob | String | Iterable<Uint8Array> | Iterable<number> | AsyncIterable<Uint8Array> | ReadableStream<Uint8Array>`
  */
-async function addFile(ipfs: IPFS.IPFS, fileContent: any) {
-    // Add file to ipfs
+ async function upload_file(ipfs: IPFS.IPFS, file_content: any) {
+    // upload file to ipfs
     const cid = await ipfs.add(
-        fileContent,
+      file_content,
         {
-            progress: (prog) => console.log(`Add received: ${prog}`)
+            progress: (prog) => console.log(`upload received: ${prog}`)
         }
     );
 
-    // Get file status from ipfs
-    const fileStat = await ipfs.files.stat("/ipfs/" + cid.path);
+    // get file status from ipfs
+    const file_stat = await ipfs.files.stat("/ipfs/" + cid.path);
 
     return {
         cid: cid.path,
-        size: fileStat.cumulativeSize
+        size: file_stat.cumulativeSize
     };
 }
 
 /**
- * Get on-chain order information about files
+ * get on-chain order information
  * @param api chain instance
  * @param cid the cid of file
  * @return order state
  */
-async function getOrderState(api: ApiPromise, cid: string) {
-    await api.isReadyOrError;
-    return await api.query.murphy.files(cid);
+ async function get_order_info(api: ApiPromise, cid: string) {
+  await api.isReadyOrError;
+  return await api.query.murphy.files(cid);
 }
 
 /**
@@ -166,7 +160,7 @@ async function getOrderState(api: ApiPromise, cid: string) {
   * @param api chain instance
   * @returns true/false
   */
-async function isSyncing(api: ApiPromise) {
+ async function is_syncing(api: ApiPromise) {
     const health = await api.rpc.system.health();
     let res = health.isSyncing.isTrue;
 
@@ -178,19 +172,16 @@ async function isSyncing(api: ApiPromise) {
             res = true;
         }
     }
-
     return res;
 }
 
-
-
 /**
- * Send tx to calcu network
+ * send tx to calcu network
  * @param krp On-chain identity
  * @param tx substrate-style tx
  * @returns tx already been sent
  */
-async function sendTx(krp: KeyringPair, tx: SubmittableExtrinsic) {
+ async function send_tx(krp: KeyringPair, tx: SubmittableExtrinsic) {
   return new Promise((resolve, reject) => {
     tx.signAndSend(krp, ({events = [], status}) => {
       logger.info(
@@ -212,11 +203,11 @@ async function sendTx(krp: KeyringPair, tx: SubmittableExtrinsic) {
         events.forEach(({event: {method, section}}) => {
           if (section === 'system' && method === 'ExtrinsicFailed') {
             // Error with no detail, just return error
-            logger.info(`  ↪ 💸 ❌ [tx]: Send transaction(${tx.type}) failed.`);
+            logger.info(` [tx]: send trans(${tx.type}) failed.`);
             resolve(false);
           } else if (method === 'ExtrinsicSuccess') {
             logger.info(
-              `  ↪ 💸 ✅ [tx]: Send transaction(${tx.type}) success.`
+              ` [tx]: send trans(${tx.type}) success.`
             );
             resolve(true);
           }
@@ -235,10 +226,10 @@ async function sendTx(krp: KeyringPair, tx: SubmittableExtrinsic) {
 }
 
 /**
- * Load keyring pair with seeds
+ * get keyring pair with seeds
  * @param seeds Account's seeds
  */
-function loadKeyringPair(seeds: string): KeyringPair {
+ function get_KeyringPair(seeds: string): KeyringPair {
   const kr = new Keyring({
     type: 'sr25519',
   });
@@ -246,7 +237,6 @@ function loadKeyringPair(seeds: string): KeyringPair {
   const krp = kr.addFromUri(seeds);
   return krp;
 }
-
 async function delay(ms: number) {
   return new Promise( resolve => setTimeout(resolve, ms) );
 }

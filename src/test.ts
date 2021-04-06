@@ -83,7 +83,7 @@ async function main() {
     // logger.info("file info: " + JSON.stringify(fileInfo));
 
     // Waiting for chain synchronization
-    while (await isSyncing(api)) {
+    while (await is_syncing(api)) {
         logger.info(
             `⛓  Chain is synchronizing, current block number ${(
                 await await api.rpc.chain.getHeader()
@@ -136,7 +136,7 @@ async function main() {
 
     // Check file status on chain
     while (true) {
-        const orderState = await getOrderState(api, cid);
+        const orderState = await get_order_info(api, cid);
         logger.info("Order status: " + JSON.stringify(orderState));
         await delay(10000);
     }
@@ -156,42 +156,20 @@ async function placeOrder(api: ApiPromise, krp: KeyringPair, fileCID: string, fi
     // Generate transaction
     const pso = api.tx.murphy.upload(fileCID, fileSize, tip);
     // Send transaction
-    const txRes = JSON.parse(JSON.stringify((await sendTx(krp, pso))));
+    const txRes = JSON.parse(JSON.stringify((await send_tx(krp, pso))));
     return JSON.parse(JSON.stringify(txRes));
 }
 
-/**
- * Add file into local ipfs node
- * @param ipfs ipfs instance
- * @param fileContent can be any of the following types: ` Uint8Array | Blob | String | Iterable<Uint8Array> | Iterable<number> | AsyncIterable<Uint8Array> | ReadableStream<Uint8Array>`
- */
-// async function addFile(ipfs: IPFS.IPFS, fileContent: any) {
-//     // Add file to ipfs
-//     const cid = await ipfs.add(
-//         fileContent,
-//         {
-//             progress: (prog) => console.log(`Add received: ${prog}`)
-//         }
-//     );
-
-//     // Get file status from ipfs
-//     const fileStat = await ipfs.files.stat("/ipfs/" + cid.path);
-
-//     return {
-//         cid: cid.path,
-//         size: fileStat.cumulativeSize
-//     };
-// }
 
 /**
- * Get on-chain order information about files
+ * get on-chain order information
  * @param api chain instance
  * @param cid the cid of file
  * @return order state
  */
-async function getOrderState(api: ApiPromise, cid: string) {
-    await api.isReadyOrError;
-    return await api.query.murphy.files(cid);
+ async function get_order_info(api: ApiPromise, cid: string) {
+  await api.isReadyOrError;
+  return await api.query.murphy.files(cid);
 }
 
 /**
@@ -199,7 +177,7 @@ async function getOrderState(api: ApiPromise, cid: string) {
   * @param api chain instance
   * @returns true/false
   */
-async function isSyncing(api: ApiPromise) {
+ async function is_syncing(api: ApiPromise) {
     const health = await api.rpc.system.health();
     let res = health.isSyncing.isTrue;
 
@@ -211,27 +189,23 @@ async function isSyncing(api: ApiPromise) {
             res = true;
         }
     }
-
     return res;
 }
 
 
 
 /**
- * Send tx to calcu network
+ * send tx to calcu network
  * @param krp On-chain identity
  * @param tx substrate-style tx
  * @returns tx already been sent
  */
-async function sendTx(krp: KeyringPair, tx: SubmittableExtrinsic) {
+ async function send_tx(krp: KeyringPair, tx: SubmittableExtrinsic) {
   return new Promise((resolve, reject) => {
     tx.signAndSend(krp, ({events = [], status}) => {
       logger.info(
         `  ↪ 💸 [tx]: Transaction status: ${status.type}, nonce: ${tx.nonce}`
       );
-      // logger.info(
-      //   `  ↪ 💸 [tx]: Transaction status: is in block: ${status.isInBlock}, nonce: ${tx.nonce}`
-      // );
 
       if (
         status.isInvalid ||
@@ -245,28 +219,25 @@ async function sendTx(krp: KeyringPair, tx: SubmittableExtrinsic) {
       }
 
       if (status.isInBlock) {
-        console.log(events)
         events.forEach(({event: {method, section}}) => {
           if (section === 'system' && method === 'ExtrinsicFailed') {
             // Error with no detail, just return error
-            logger.info(`  ↪ 💸 ❌ [tx]: Send transaction(${tx.type}) failed.`);
+            logger.info(` [tx]: send trans(${tx.type}) failed.`);
             resolve(false);
           } else if (method === 'ExtrinsicSuccess') {
             logger.info(
-              `  ↪ 💸 ✅ [tx]: Send transaction(${tx.type}) success.`
+              ` [tx]: send trans(${tx.type}) success.`
             );
             resolve(true);
           }
         });
         events.forEach(({event:{ data, method, section } }) => {
-        //   console.log(event)
-          console.log(`\t' ${section}.${method}:: ${data}`);
-
-        });
+            console.log(`\t' ${section}.${method}:: ${data}`);
+  
+          });
       } else {
         // Pass it
       }
-
     }).catch(e => {
       reject(e);
     });
