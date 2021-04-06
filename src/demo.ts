@@ -152,7 +152,7 @@ async function main() {
  */
  async function get_order_info(api: ApiPromise, cid: string) {
   await api.isReadyOrError;
-  return await api.query.market.files(cid);
+  return await api.query.murphy.files(cid);
 }
 
 /**
