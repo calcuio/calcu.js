@@ -1,7 +1,7 @@
 import { argv } from 'process';
 import fs from 'fs';
 import IPFS from 'ipfs-core';
-import { ApiPromise, WsProvider } from '@polkadot/api';
+import { WsProvider } from '@polkadot/api';
 import {Calcu} from './';
 import {Keyring} from '@polkadot/keyring';
 import {KeyringPair} from '@polkadot/keyring/types';
@@ -61,7 +61,7 @@ async function main() {
     const ipfs = await IPFS.create();
 
     // connect to chain
-    let api = await Calcu({
+    let api = new Calcu({
         provider: new WsProvider(chain_ws_url)
     });
 
@@ -111,14 +111,13 @@ async function main() {
  * @param tip tip for this order
  * @return true/false
  */
- async function send_order(api: ApiPromise, krp: KeyringPair, cid: string, file_size: number, tip: number) {
+ async function send_order(api: Calcu, krp: KeyringPair, cid: string, file_size: number, tip: number) {
 
     await api.isReadyOrError;
     // make transaction
     const pso = api.tx.murphy.upload(cid, file_size, tip);
     // send transaction
-    const txRes = JSON.parse(JSON.stringify((await send_tx(krp, pso))));
-    return JSON.parse(JSON.stringify(txRes));
+    return await send_tx(krp, pso);
 }
 
 /**
@@ -150,7 +149,7 @@ async function main() {
  * @param cid the cid of file
  * @return order state
  */
- async function get_order_info(api: ApiPromise, cid: string) {
+ async function get_order_info(api: Calcu, cid: string) {
   await api.isReadyOrError;
   return await api.query.murphy.files(cid);
 }
@@ -160,7 +159,7 @@ async function main() {
   * @param api chain instance
   * @returns true/false
   */
- async function is_syncing(api: ApiPromise) {
+ async function is_syncing(api: Calcu) {
     const health = await api.rpc.system.health();
     let res = health.isSyncing.isTrue;
 
@@ -185,7 +184,7 @@ async function main() {
   return new Promise((resolve, reject) => {
     tx.signAndSend(krp, ({events = [], status}) => {
       logger.info(
-        `  ↪ 💸 [tx]: Transaction status: ${status.type}, nonce: ${tx.nonce}`
+        `  ↪ [tx]: Transaction status: ${status.type}, nonce: ${tx.nonce}`
       );
 
       if (
@@ -199,15 +198,15 @@ async function main() {
         // Pass it
       }
 
-      if (status.isInBlock) {
+      if (status.isInBlock || status.isFinalized) {
         events.forEach(({event: {method, section}}) => {
           if (section === 'system' && method === 'ExtrinsicFailed') {
             // Error with no detail, just return error
-            logger.info(` [tx]: send trans(${tx.type}) failed.`);
+            logger.info(` [tx]: send tx(${tx.type}) failed.`);
             resolve(false);
           } else if (method === 'ExtrinsicSuccess') {
             logger.info(
-              ` [tx]: send trans(${tx.type}) success.`
+              ` [tx]: send tx(${tx.type}) success.`
             );
             resolve(true);
           }
