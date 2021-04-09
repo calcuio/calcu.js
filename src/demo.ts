@@ -121,6 +121,24 @@ async function main() {
 }
 
 /**
+ * send stroage order
+ * @param api chain instance
+ * @param cid file cid
+ * @param file_size the size of file in ipfs
+ * @param tip tip for this order
+ * @param nft
+ * @return true/false
+ */
+async function send_order_with_nft(api: Calcu, krp: KeyringPair, cid: string, file_size: number, tip: number, nft: boolean) {
+
+  await api.isReadyOrError;
+  // make transaction
+  const pso = api.tx.murphy.upload(cid, file_size, tip, nft);
+  // send transaction
+  return await send_tx(krp, pso);
+}
+
+/**
  * upload file into local ipfs node
  * @param ipfs ipfs instance
  * @param fileContent can be any of the following types: ` Uint8Array | Blob | String | Iterable<Uint8Array> | Iterable<number> | AsyncIterable<Uint8Array> | ReadableStream<Uint8Array>`
