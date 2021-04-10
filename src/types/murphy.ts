@@ -9,6 +9,7 @@ export default {
       prepaid: 'Balance',
       reported_replica_count: 'u32',
       replicas: 'Vec<Replica<AccountId>>',
+      is_nft: 'bool',
     },
     UsedInfo: {
       used_size: 'u64',
