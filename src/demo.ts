@@ -35,7 +35,7 @@ async function main() {
     let chain_ws_url = argv[2];
     if (!chain_ws_url) {
         chain_ws_url = "ws://localhost:9944" ;
-        logger.warn("chain url set as default : "+chain_ws_url);
+        logger.warn("chain url set as default : " + chain_ws_url);
     }
     else {
         logger.info("Chain url is: " + chain_ws_url);
@@ -72,11 +72,11 @@ async function main() {
 
 
     // upload file into ipfs
-    const file_info = await upload_file(ipfs, file_content)
-    logger.info("file info: " + JSON.stringify(file_info));
+    const fileInfo = await uploadFile(ipfs, file_content)
+    logger.info("file info: " + JSON.stringify(fileInfo));
 
     // Waiting for chain synchronization
-    while (await is_syncing(api)) {
+    while (await isSync(api)) {
         logger.info(
             `chain is synchronizing, current block number ${(
                 await await api.rpc.chain.getHeader()
@@ -85,57 +85,57 @@ async function main() {
         await delay(6000);
     }
 
-    // Send storage order transaction
-    const poRes = await send_order(api, krp, file_info.cid, file_info.size, 0)
+    // Send storage file transaction
+    const poRes = await sendFile(api, krp, fileInfo.cid, fileInfo.size, 0)
     if (!poRes) {
-        logger.error("send order failed");
+        logger.error("send file failed");
         return
     }
     else {
-        logger.info("send order success");
+        logger.info("send file success");
     }
 
     // get file status on chain
     while (true) {
-      const order_state = await get_order_info(api, file_info.cid);
-      logger.info("Order status: " + JSON.stringify(order_state));
+      const file_state = await getFileInfo(api, fileInfo.cid);
+      logger.info("File status: " + JSON.stringify(file_state));
       await delay(10000);
   }
 }
 
 /**
- * send stroage order
+ * send stroage file
  * @param api chain instance
  * @param cid file cid
  * @param file_size the size of file in ipfs
- * @param tip tip for this order
+ * @param tip tip for this file
  * @return true/false
  */
- async function send_order(api: Calcu, krp: KeyringPair, cid: string, file_size: number, tip: number) {
+ async function sendFile(api: Calcu, krp: KeyringPair, cid: string, file_size: number, tip: number) {
 
     await api.isReadyOrError;
     // make transaction
-    const pso = api.tx.murphy.upload(cid, file_size, tip);
+    const pso = api.tx.murphy.upload(cid, file_size, tip, false);
     // send transaction
-    return await send_tx(krp, pso);
+    return await sendTx(krp, pso);
 }
 
 /**
- * send stroage order
+ * send stroage file
  * @param api chain instance
  * @param cid file cid
  * @param file_size the size of file in ipfs
- * @param tip tip for this order
+ * @param tip tip for this file
  * @param nft
  * @return true/false
  */
-async function send_order_with_nft(api: Calcu, krp: KeyringPair, cid: string, file_size: number, tip: number, nft: boolean) {
+async function sendNFTFile(api: Calcu, krp: KeyringPair, cid: string, file_size: number, tip: number, nft: boolean) {
 
   await api.isReadyOrError;
   // make transaction
   const pso = api.tx.murphy.upload(cid, file_size, tip, nft);
   // send transaction
-  return await send_tx(krp, pso);
+  return await sendTx(krp, pso);
 }
 
 /**
@@ -143,7 +143,7 @@ async function send_order_with_nft(api: Calcu, krp: KeyringPair, cid: string, fi
  * @param ipfs ipfs instance
  * @param fileContent can be any of the following types: ` Uint8Array | Blob | String | Iterable<Uint8Array> | Iterable<number> | AsyncIterable<Uint8Array> | ReadableStream<Uint8Array>`
  */
- async function upload_file(ipfs: IPFS.IPFS, file_content: any) {
+ async function uploadFile(ipfs: IPFS.IPFS, file_content: any) {
     // upload file to ipfs
     const cid = await ipfs.add(
       file_content,
@@ -162,12 +162,12 @@ async function send_order_with_nft(api: Calcu, krp: KeyringPair, cid: string, fi
 }
 
 /**
- * get on-chain order information
+ * get on-chain file information
  * @param api chain instance
  * @param cid the cid of file
- * @return order state
+ * @return file state
  */
- async function get_order_info(api: Calcu, cid: string) {
+ async function getFileInfo(api: Calcu, cid: string) {
   await api.isReadyOrError;
   return await api.query.murphy.files(cid);
 }
@@ -177,7 +177,7 @@ async function send_order_with_nft(api: Calcu, krp: KeyringPair, cid: string, fi
   * @param api chain instance
   * @returns true/false
   */
- async function is_syncing(api: Calcu) {
+ async function isSync(api: Calcu) {
     const health = await api.rpc.system.health();
     let res = health.isSyncing.isTrue;
 
@@ -198,7 +198,7 @@ async function send_order_with_nft(api: Calcu, krp: KeyringPair, cid: string, fi
  * @param tx substrate-style tx
  * @returns tx already been sent
  */
- async function send_tx(krp: KeyringPair, tx: SubmittableExtrinsic) {
+ async function sendTx(krp: KeyringPair, tx: SubmittableExtrinsic) {
   return new Promise((resolve, reject) => {
     tx.signAndSend(krp, ({events = [], status}) => {
       logger.info(
@@ -246,7 +246,7 @@ async function send_order_with_nft(api: Calcu, krp: KeyringPair, cid: string, fi
  * get keyring pair with seeds
  * @param seeds Account's seeds
  */
- function get_KeyringPair(seeds: string): KeyringPair {
+ function getKeyringPair(seeds: string): KeyringPair {
   const kr = new Keyring({
     type: 'sr25519',
   });
