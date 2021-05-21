@@ -23,6 +23,7 @@ main();
 
 2. Get the file info from the Calcu Network
 
+
 ```ts
 // get file info
 const fileInfo = await calcu.query.murphy.files('QmYpVrhb796h4r47z6tDwbbg3yyU28y9SJKcxitWC5s5Ko');
@@ -104,3 +105,5 @@ upload received: 6914
 [2021-05-21 16:26:44] info: File status: [{"file_size":6925,"expired_on":0,"calculated_at":4,"amount":3601800,"prepaid":0,"reported_replica_count":0,"replicas":[]},{"used_size":0,"reported_group_count":0,"groups":{}}]
 
 ```
+
+
