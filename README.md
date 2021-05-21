@@ -21,7 +21,7 @@ async function main() {
 main();
 ```
 
-2. Get infomation from the Calcu Network
+2. Get file info from the Calcu Network
 
 ```ts
 // get file info
